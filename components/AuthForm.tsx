@@ -110,11 +110,11 @@ const AuthForm = ({ type }: { type: FormType }) => {
   const isSignIn = type === "sign-in";
 
   return (
-    <div className="card-border lg:min-w-[566px] shadow-xl">
-      <div className="flex flex-col gap-6 card py-14 px-10">
+    <div className="bg-white rounded-2xl shadow-2xl lg:min-w-[566px] border border-gray-200">
+      <div className="flex flex-col gap-6 py-14 px-10">
         <div className="flex flex-row gap-2 justify-center items-center">
           <Image src="/logo.svg" alt="logo" height={40} width={46} />
-          <h2 className="text-primary-100 text-3xl font-bold">MockSy</h2>
+          <h2 className="text-indigo-600 text-3xl font-bold">MockSy</h2>
         </div>
 
         <div className="text-center space-y-2 mb-2">
@@ -182,23 +182,23 @@ const AuthForm = ({ type }: { type: FormType }) => {
             <span className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">
+            <span className="bg-white px-2 text-gray-600 font-medium">
               {isSignIn ? "New to MockSy?" : "Already have an account?"}
             </span>
           </div>
         </div>
 
-        <p className="text-center text-sm">
+        <p className="text-center text-sm text-gray-700">
           <Link
             href={!isSignIn ? "/sign-in" : "/sign-up"}
-            className="font-semibold text-primary-200 hover:text-primary-100 transition-colors"
+            className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors underline"
           >
             {!isSignIn ? "Sign in to your account" : "Create a new account"}
           </Link>
         </p>
         
         {!isSignIn && (
-          <p className="text-xs text-center text-gray-500 mt-4">
+          <p className="text-xs text-center text-gray-600 mt-4">
             By creating an account, you agree to our Terms of Service and Privacy Policy
           </p>
         )}
