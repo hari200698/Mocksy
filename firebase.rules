@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow signed-in users to read/write their own attempts
+    match /interviews/{interviewId}/attempts/{attemptId} {
+      // Allow read if user owns the attempt
+      allow read: if request.auth != null 
+        && resource.data.userId == request.auth.uid;
+      
+      // Allow write (create/update) if user owns the attempt
+      allow write: if request.auth != null 
+        && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
+
