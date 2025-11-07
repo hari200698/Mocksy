@@ -3,8 +3,7 @@ import { generateFollowUps, FollowUpResponse } from "./followup-generator";
 import { CompanyType } from "./company-profiles";
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { getPromptContent } from './prompts/prompts';
 
 export interface QuestionEvaluation {
   questionId: string;
@@ -311,11 +310,8 @@ async function createImprovementPlan(
   try {
     console.log('🤖 [IMPROVEMENT-PLAN] Starting AI generation...');
     
-    // Load the prompt template
-    const promptTemplate = readFileSync(
-      join(process.cwd(), 'lib/prompts/improvement-plan-v1.md'),
-      'utf-8'
-    );
+    // Load the prompt template from string export (works in serverless)
+    const promptTemplate = getPromptContent('improvement_plan', 'v1');
     
     console.log('✅ [IMPROVEMENT-PLAN] Prompt template loaded');
 

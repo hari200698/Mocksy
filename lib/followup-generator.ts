@@ -1,7 +1,5 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { getActivePromptVersion } from "./prompts/prompt-config";
 import { STARAnalysis } from "./star-analyzer";
 
@@ -40,10 +38,9 @@ export async function generateFollowUps(
 
   try {
     // Load the prompt template
-    const promptTemplate = readFileSync(
-      join(process.cwd(), promptVersion.filePath),
-      'utf-8'
-    );
+    // Note: Follow-up generation is currently disabled in production
+    // TODO: Add followup prompt to prompts.ts
+    const promptTemplate = `You are an expert interviewer. Generate follow-up questions based on the STAR analysis.`;
 
     // Build context about what's missing
     const gaps = identifyGaps(starAnalysis);
@@ -94,7 +91,7 @@ Generate 1-3 follow-up questions to address the most critical gaps. Return the J
 
     // Call the AI model - Using Gemini 2.0 Flash for analysis
     const { text, usage } = await generateText({
-      model: google("gemini-2.0-flash-exp"),
+      model: google("gemini-2.5-flash"),
       prompt: fullPrompt,
       temperature: 0.4, // Slightly higher for more natural question variety
     });
@@ -117,7 +114,7 @@ Generate 1-3 follow-up questions to address the most critical gaps. Return the J
       reasoning: parsedResponse.reasoning || '',
       metadata: {
         promptVersion: promptVersion.version,
-        modelUsed: 'gemini-1.5-pro-latest',
+        modelUsed: 'gemini-2.5-flash',
         tokensUsed: usage?.totalTokens || 0,
         latencyMs,
         timestamp: new Date().toISOString(),

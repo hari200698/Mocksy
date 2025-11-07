@@ -1,7 +1,6 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { getPromptContent } from "./prompts/prompts";
 import { getActivePromptVersion } from "./prompts/prompt-config";
 
 export interface STARComponent {
@@ -43,11 +42,8 @@ export async function analyzeSTAR(
   const promptVersion = getActivePromptVersion('starDetection');
 
   try {
-    // Load the prompt template
-    const promptTemplate = readFileSync(
-      join(process.cwd(), promptVersion.filePath),
-      'utf-8'
-    );
+    // Load the prompt template from string export (works in serverless)
+    const promptTemplate = getPromptContent('star_detection', 'v1');
 
     // Build the full prompt
     const fullPrompt = `${promptTemplate}
@@ -69,7 +65,7 @@ Analyze this answer and return the JSON response as specified in the prompt abov
 
     // Call the AI model - Using Gemini 2.0 Flash for analysis
     const { text, usage } = await generateText({
-      model: google("gemini-2.0-flash-exp"),
+      model: google("gemini-2.5-flash"),
       prompt: fullPrompt,
       temperature: 0.3, // Lower temperature for more consistent structured output
     });
@@ -108,7 +104,7 @@ Analyze this answer and return the JSON response as specified in the prompt abov
       criticalIssues: parsedResponse.criticalIssues || [],
       metadata: {
         promptVersion: promptVersion.version,
-        modelUsed: 'gemini-2.5-pro',
+        modelUsed: 'gemini-2.5-flash',
         tokensUsed: usage?.totalTokens || 0,
         latencyMs,
         timestamp: new Date().toISOString(),

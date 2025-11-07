@@ -15,6 +15,7 @@ enum CallStatus {
   CONNECTING = "CONNECTING",
   ACTIVE = "ACTIVE",
   FINISHED = "FINISHED",
+  GENERATING_FEEDBACK = "GENERATING_FEEDBACK",
 }
 
 interface SavedMessage {
@@ -102,6 +103,9 @@ const Agent = ({
       console.log("- Messages count:", messages.length);
       console.log("- Existing feedbackId:", feedbackId);
 
+      // Set status to generating feedback
+      setCallStatus(CallStatus.GENERATING_FEEDBACK);
+
       const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
         userId: userId!,
@@ -116,6 +120,7 @@ const Agent = ({
         router.push(`/interview/${interviewId}/feedback`);
       } else {
         console.error("❌ Error saving feedback - redirecting to home");
+        setCallStatus(CallStatus.INACTIVE); // Reset status on error
         router.push("/");
       }
     };
@@ -279,36 +284,7 @@ const Agent = ({
 
       {/* Call Controls */}
       <div className="flex justify-center pt-2">
-        {callStatus !== "ACTIVE" ? (
-          <button 
-            className={cn(
-              "relative px-8 py-3 bg-blue-600 hover:bg-blue-700",
-              "text-white font-medium text-base rounded-lg shadow-sm",
-              "transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            )}
-            onClick={() => handleCall()}
-            disabled={callStatus === "CONNECTING"}
-          >
-            <span className="flex items-center gap-2">
-              {callStatus === "INACTIVE" || callStatus === "FINISHED" ? (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  Start Interview
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Connecting...
-                </>
-              )}
-            </span>
-          </button>
-        ) : (
+        {callStatus === "ACTIVE" ? (
           <button 
             className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-medium text-base rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             onClick={() => handleDisconnect()}
@@ -318,6 +294,45 @@ const Agent = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               End Interview
+            </span>
+          </button>
+        ) : (
+          <button 
+            className={cn(
+              "relative px-8 py-3",
+              callStatus === "GENERATING_FEEDBACK" 
+                ? "bg-green-600 hover:bg-green-700" 
+                : "bg-blue-600 hover:bg-blue-700",
+              "text-white font-medium text-base rounded-lg shadow-sm",
+              "transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            )}
+            onClick={() => handleCall()}
+            disabled={callStatus === "CONNECTING" || callStatus === "GENERATING_FEEDBACK"}
+          >
+            <span className="flex items-center gap-2">
+              {callStatus === "GENERATING_FEEDBACK" ? (
+                <>
+                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Generating Report...
+                </>
+              ) : callStatus === "CONNECTING" ? (
+                <>
+                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  Start Interview
+                </>
+              )}
             </span>
           </button>
         )}
