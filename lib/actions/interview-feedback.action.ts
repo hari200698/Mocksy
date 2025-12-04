@@ -230,9 +230,6 @@ function parseTranscriptToQA(
   const qaMap = new Map();
   let currentQuestionIndex = -1;
   let mainAnswer = "";
-  const followUps: Array<{ question: string; answer: string; reason: string }> = [];
-  let lastAssistantMessage = "";
-  let isFollowUp = false;
   
   // Track which questions have been matched to avoid duplicates
   const matchedQuestionIndices = new Set<number>();
@@ -295,59 +292,48 @@ function parseTranscriptToQA(
       }
 
       if (questionIndex !== -1) {
+        // This assistant message contains a NEW main question
         // Save previous question's data before starting new one
         if (currentQuestionIndex !== -1 && !qaMap.has(currentQuestionIndex)) {
           qaMap.set(currentQuestionIndex, {
-            mainAnswer: mainAnswer || "No answer provided",
-            followUps: [...followUps],
+            mainAnswer: mainAnswer.trim() || "No answer provided",
+            followUps: [], // No follow-ups in current setup
           });
-          console.log(`💾 [PARSE-TRANSCRIPT] Saved question ${currentQuestionIndex}`);
+          console.log(`💾 [PARSE-TRANSCRIPT] Saved question ${currentQuestionIndex} with answer length: ${mainAnswer.length}`);
         }
 
         // Start new question
         currentQuestionIndex = questionIndex;
         matchedQuestionIndices.add(questionIndex);
         mainAnswer = "";
-        followUps.length = 0;
-        isFollowUp = false;
         console.log(`🆕 [PARSE-TRANSCRIPT] Starting question ${questionIndex}: "${questions[questionIndex].substring(0, 50)}..."`);
       } else {
-        // This is likely a follow-up question or acknowledgment
-        // Only mark as follow-up if we have an active question
-        if (currentQuestionIndex !== -1) {
-          isFollowUp = true;
-        }
+        // This is NOT a new main question - it's an interruption, acknowledgment, or encouragement
+        // IMPORTANT: We do NOT reset anything here - we continue collecting the user's answer
+        console.log(`💬 [PARSE-TRANSCRIPT] AI spoke (not a new question): "${message.content.substring(0, 50)}..."`);
       }
-
-      lastAssistantMessage = message.content;
     } else if (message.role === "user") {
       if (currentQuestionIndex === -1) {
         // Skip user messages before first question is identified
+        console.log(`⏭️ [PARSE-TRANSCRIPT] Skipping user message before first question`);
         continue;
       }
 
-      if (!isFollowUp) {
-        // Main answer
-        mainAnswer += (mainAnswer ? " " : "") + message.content;
-      } else {
-        // Follow-up answer
-        followUps.push({
-          question: lastAssistantMessage,
-          answer: message.content,
-          reason: "Probing for more details",
-        });
-        isFollowUp = false;
-      }
+      // ALWAYS concatenate ALL user messages to the current question's answer
+      // This handles: pauses, thinking time, AI interruptions, user continuing after interruption
+      // Everything the user says until the NEXT main question is part of THIS answer
+      mainAnswer += (mainAnswer ? " " : "") + message.content;
+      console.log(`📝 [PARSE-TRANSCRIPT] Added to answer for Q${currentQuestionIndex}: "${message.content.substring(0, 50)}..." (total: ${mainAnswer.length} chars)`);
     }
   }
 
   // Save last question's data
   if (currentQuestionIndex !== -1 && !qaMap.has(currentQuestionIndex)) {
     qaMap.set(currentQuestionIndex, {
-      mainAnswer: mainAnswer || "No answer provided",
-      followUps: [...followUps],
+      mainAnswer: mainAnswer.trim() || "No answer provided",
+      followUps: [], // No follow-ups in current setup
     });
-    console.log(`💾 [PARSE-TRANSCRIPT] Saved final question ${currentQuestionIndex}`);
+    console.log(`💾 [PARSE-TRANSCRIPT] Saved final question ${currentQuestionIndex} with answer length: ${mainAnswer.length}`);
   }
 
   console.log(`✅ [PARSE-TRANSCRIPT] Parse complete. Found ${qaMap.size} questions out of ${questions.length} total.`);

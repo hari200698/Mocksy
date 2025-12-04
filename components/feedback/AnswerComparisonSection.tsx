@@ -9,17 +9,20 @@ interface AnswerComparisonSectionProps {
   starAnalysis: STARAnalysis;
   company: 'amazon' | 'google' | 'meta' | 'generic';
   principle: string;
+  role?: string; // Optional role for tailored examples
 }
 
 const AnswerComparisonSection = ({ 
   userAnswer, 
   starAnalysis, 
   company, 
-  principle 
+  principle,
+  role 
 }: AnswerComparisonSectionProps) => {
   const [showComparison, setShowComparison] = useState(true); // Changed to true - show by default
   
-  const exampleAnswer = getExampleAnswer(company, principle);
+  // Pass role to get role-specific example if available
+  const exampleAnswer = getExampleAnswer(company, principle, role);
   
   if (!exampleAnswer) return null;
 

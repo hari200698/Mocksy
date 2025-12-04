@@ -12,9 +12,10 @@ interface QuestionFeedbackViewProps {
   evaluation: QuestionEvaluation;
   questionNumber: number;
   company?: 'amazon' | 'google' | 'meta' | 'generic';
+  role?: string; // Job role for tailored example answers
 }
 
-const QuestionFeedbackView = ({ evaluation, questionNumber, company }: QuestionFeedbackViewProps) => {
+const QuestionFeedbackView = ({ evaluation, questionNumber, company, role }: QuestionFeedbackViewProps) => {
   return (
     <div className="space-y-6">
       {/* Question Header - Modern Gradient Design */}
@@ -87,7 +88,8 @@ const QuestionFeedbackView = ({ evaluation, questionNumber, company }: QuestionF
           hasCompany: !!company,
           company,
           hasPrinciple: !!evaluation.principle,
-          principle: evaluation.principle
+          principle: evaluation.principle,
+          role: role
         });
         
         return company && evaluation.principle ? (
@@ -96,6 +98,7 @@ const QuestionFeedbackView = ({ evaluation, questionNumber, company }: QuestionF
             starAnalysis={evaluation.starAnalysis}
             company={company}
             principle={evaluation.principle}
+            role={role}
           />
         ) : (
           <div className="p-4 bg-yellow-50 border border-yellow-300 rounded-lg">

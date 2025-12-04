@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import DisplayTechIcons from "./DisplayTechIcons";
 import InterviewCardActions from "./InterviewCardActions";
+import DeleteInterviewButton from "./DeleteInterviewButton";
 
 import { cn } from "@/lib/utils";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
@@ -114,20 +115,26 @@ const InterviewCard = async ({
           <InterviewCardActions interviewId={interviewId!} />
         ) : (
           // Show default button for completed interviews
-          <div className="flex flex-row justify-between">
+          <div className="flex flex-row justify-between items-center">
             <DisplayTechIcons techStack={techstack} />
 
-            <Button className="btn-primary">
-              <Link
-                href={
-                  hasFeedback
-                    ? `/interview/${interviewId}/feedback`
-                    : `/interview/${interviewId}`
-                }
-              >
-                {hasFeedback ? "Check Feedback" : "View Interview"}
-              </Link>
-            </Button>
+            <div className="flex flex-row items-center gap-2">
+              {hasFeedback && interviewId && (
+                <DeleteInterviewButton interviewId={interviewId} />
+              )}
+              
+              <Button className="btn-primary">
+                <Link
+                  href={
+                    hasFeedback
+                      ? `/interview/${interviewId}/feedback`
+                      : `/interview/${interviewId}`
+                  }
+                >
+                  {hasFeedback ? "Check Feedback" : "View Interview"}
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
       </div>

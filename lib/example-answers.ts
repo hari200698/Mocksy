@@ -4,6 +4,7 @@ export interface ExampleAnswer {
   question: string;
   principle: string;
   company: CompanyType;
+  roleCategory?: RoleCategory;
   strongAnswer: string;
   whyItsStrong: string[];
   starBreakdown: {
@@ -15,14 +16,125 @@ export interface ExampleAnswer {
 }
 
 /**
- * Get example strong answer for a given principle
+ * Role categories for tailored example answers
+ */
+export type RoleCategory = 'engineering' | 'product' | 'data' | 'leadership' | 'design' | 'general';
+
+/**
+ * Map specific job roles to role categories
+ */
+export function getRoleCategory(role: string): RoleCategory {
+  const roleLower = role.toLowerCase();
+  
+  // Engineering roles
+  if (
+    roleLower.includes('software') ||
+    roleLower.includes('engineer') ||
+    roleLower.includes('developer') ||
+    roleLower.includes('frontend') ||
+    roleLower.includes('backend') ||
+    roleLower.includes('full stack') ||
+    roleLower.includes('fullstack') ||
+    roleLower.includes('devops') ||
+    roleLower.includes('sre') ||
+    roleLower.includes('platform') ||
+    roleLower.includes('infrastructure') ||
+    roleLower.includes('mobile') ||
+    roleLower.includes('ios') ||
+    roleLower.includes('android') ||
+    roleLower.includes('qa') ||
+    roleLower.includes('test') ||
+    roleLower.includes('sdet')
+  ) {
+    return 'engineering';
+  }
+  
+  // Product roles
+  if (
+    roleLower.includes('product manager') ||
+    roleLower.includes('product owner') ||
+    roleLower.includes('program manager') ||
+    roleLower.includes('technical program') ||
+    roleLower.includes('tpm') ||
+    roleLower.includes('project manager') ||
+    roleLower.includes('scrum master') ||
+    roleLower.includes('agile')
+  ) {
+    return 'product';
+  }
+  
+  // Data roles
+  if (
+    roleLower.includes('data scientist') ||
+    roleLower.includes('data analyst') ||
+    roleLower.includes('data engineer') ||
+    roleLower.includes('machine learning') ||
+    roleLower.includes('ml engineer') ||
+    roleLower.includes('ai engineer') ||
+    roleLower.includes('analytics') ||
+    roleLower.includes('business intelligence') ||
+    roleLower.includes('bi ')
+  ) {
+    return 'data';
+  }
+  
+  // Leadership roles
+  if (
+    roleLower.includes('manager') ||
+    roleLower.includes('director') ||
+    roleLower.includes('vp') ||
+    roleLower.includes('vice president') ||
+    roleLower.includes('head of') ||
+    roleLower.includes('chief') ||
+    roleLower.includes('lead') ||
+    roleLower.includes('principal') ||
+    roleLower.includes('staff')
+  ) {
+    return 'leadership';
+  }
+  
+  // Design roles
+  if (
+    roleLower.includes('design') ||
+    roleLower.includes('ux') ||
+    roleLower.includes('ui') ||
+    roleLower.includes('user experience') ||
+    roleLower.includes('user interface') ||
+    roleLower.includes('graphic') ||
+    roleLower.includes('visual')
+  ) {
+    return 'design';
+  }
+  
+  return 'general';
+}
+
+/**
+ * Get example strong answer for a given principle, with optional role-specific tailoring
+ * 
+ * Priority:
+ * 1. Role-specific example (company_principle_roleCategory)
+ * 2. Generic example for that principle (company_principle)
+ * 3. null if nothing found
  */
 export function getExampleAnswer(
   company: CompanyType,
-  principle: string
+  principle: string,
+  role?: string
 ): ExampleAnswer | null {
-  const key = `${company}_${principle}`;
-  return EXAMPLE_ANSWERS[key] || null;
+  // If role is provided, try to get role-specific example first
+  if (role) {
+    const roleCategory = getRoleCategory(role);
+    const roleSpecificKey = `${company}_${principle}_${roleCategory}`;
+    
+    if (EXAMPLE_ANSWERS[roleSpecificKey]) {
+      return EXAMPLE_ANSWERS[roleSpecificKey];
+    }
+  }
+  
+  // Fall back to generic example
+  const genericKey = `${company}_${principle}`;
+  return EXAMPLE_ANSWERS[genericKey] || null;
 }
 
 /**
@@ -968,6 +1080,284 @@ The failure taught me humility, the importance of asking for help, and that earl
       task: "Deliver feature for high-visibility conference demo",
       action: "Made mistakes (underestimated complexity, no buffer, didn't ask for help, didn't communicate when behind), worked 80-hour weeks, told manager day before conference we weren't ready",
       result: "Demo failed in front of 500 people and CEO, humiliating, did post-mortem, apologized, rebuilt properly in 4 weeks, launched successfully, became popular feature, promoted to team lead a year later with failure cited as growth evidence",
+    },
+  },
+
+  // ============================================
+  // ROLE-SPECIFIC EXAMPLES: ENGINEERING
+  // ============================================
+
+  amazon_customerObsession_engineering: {
+    question: "Tell me about a time when you went above and beyond for a customer",
+    principle: "customerObsession",
+    company: "amazon",
+    roleCategory: "engineering",
+    strongAnswer: `In Q2 2023, I was a backend engineer when our monitoring showed that API response times for our checkout service had degraded from 200ms to 1.2 seconds for customers in Australia. This was affecting 50,000+ daily transactions and causing a 12% cart abandonment rate in that region.
+
+I dove deep into the issue even though it wasn't my assigned sprint work. I analyzed network traces, database query patterns, and CDN logs. I discovered our database queries were hitting the US-West primary instead of the Australia replica due to a misconfigured connection pool.
+
+I fixed the connection pooling issue, implemented regional read replicas with proper routing, and added latency monitoring alerts. I also wrote a runbook so the on-call team could quickly diagnose similar issues in the future. I worked through 3 nights to minimize customer impact.
+
+The result: response times dropped to 180ms (even better than before), cart abandonment in Australia decreased by 15%, and we recovered an estimated $2.3M in annual revenue. The fix I implemented became a template for all our regional services. My manager cited this as a prime example of customer obsession driving engineering decisions.`,
+    whyItsStrong: [
+      "Technical deep-dive with specific metrics (200ms to 1.2s, 50K transactions)",
+      "Proactive ownership (not assigned work, worked through nights)",
+      "Root cause analysis (connection pool misconfiguration)",
+      "Scalable solution (regional read replicas, monitoring alerts, runbook)",
+      "Business impact quantified ($2.3M revenue, 15% cart abandonment reduction)",
+    ],
+    starBreakdown: {
+      situation: "Q2 2023, backend engineer, checkout API latency degraded 200ms → 1.2s for Australia, 50K+ daily transactions affected, 12% cart abandonment",
+      task: "Diagnose and fix latency issue affecting Australian customers",
+      action: "Analyzed network traces/queries/CDN logs, found misconfigured connection pool hitting US primary, fixed routing, implemented regional read replicas, added monitoring, wrote runbook, worked 3 nights",
+      result: "Response time → 180ms, cart abandonment -15%, recovered $2.3M annual revenue, solution became template for regional services",
+    },
+  },
+
+  amazon_customerObsession_product: {
+    question: "Tell me about a time when you went above and beyond for a customer",
+    principle: "customerObsession",
+    company: "amazon",
+    roleCategory: "product",
+    strongAnswer: `In Q3 2023, I was a Product Manager when we received escalations from 3 enterprise customers threatening to churn, representing $4M in annual revenue. They all complained about the same thing: our reporting dashboard was too slow and lacked customization options.
+
+I personally called each customer's VP of Operations to understand their pain points. I learned they needed: (1) sub-10-second load times for reports with 1M+ rows, (2) custom date ranges, and (3) exportable visualizations. Our current product took 45 seconds to load and had fixed quarterly views.
+
+I reprioritized our Q4 roadmap, partnered with engineering to implement lazy loading and pagination, and designed a flexible date picker with presets. I ran weekly calls with all 3 customers during development, showing them prototypes and incorporating feedback. I even flew to one customer's office for a 2-day design session.
+
+The result: load times dropped from 45 seconds to 6 seconds, all 3 customers renewed (saving $4M ARR), and one customer became our biggest advocate, referring 2 new enterprise deals worth $1.2M. Customer NPS for our dashboard increased from -15 to +45. This experience taught me that direct customer engagement is the fastest path to product-market fit.`,
+    whyItsStrong: [
+      "High-stakes customer engagement ($4M ARR at risk)",
+      "Direct customer research (called VPs, flew to customer office)",
+      "Clear understanding of customer needs (3 specific requirements)",
+      "Cross-functional leadership (reprioritized roadmap, partnered with engineering)",
+      "Quantified business impact ($4M saved, $1.2M new deals, NPS -15 to +45)",
+    ],
+    starBreakdown: {
+      situation: "Q3 2023, PM, 3 enterprise customers threatening to churn ($4M ARR), reporting dashboard too slow (45s) and lacked customization",
+      task: "Retain customers by fixing their pain points",
+      action: "Called each customer's VP, flew to one customer's office, learned specific needs, reprioritized roadmap, partnered with engineering on lazy loading/pagination, ran weekly calls during development",
+      result: "Load times 45s → 6s, all 3 customers renewed ($4M saved), one referred $1.2M in new deals, NPS -15 → +45",
+    },
+  },
+
+  amazon_customerObsession_data: {
+    question: "Tell me about a time when you went above and beyond for a customer",
+    principle: "customerObsession",
+    company: "amazon",
+    roleCategory: "data",
+    strongAnswer: `In Q1 2024, I was a Data Scientist when our customer success team flagged that enterprise clients were struggling to understand our ML model predictions. They couldn't explain to their own stakeholders why our churn prediction model flagged certain accounts, leading to distrust in our product.
+
+I decided to make model explainability my priority, even though my OKRs were focused on improving model accuracy. I interviewed 8 customer success managers and 5 enterprise clients directly to understand what explanations they needed. I learned they wanted simple, actionable insights - not technical SHAP values.
+
+I built an interpretable dashboard that translated model outputs into plain English: "This account is flagged because: (1) Login frequency dropped 60% last month, (2) Support tickets increased 3x, (3) Key user 'Sarah' hasn't logged in for 14 days." I also created account-level "health scores" with clear thresholds.
+
+The result: customer success teams started actively using the model (adoption went from 23% to 87%), and they prevented $3.2M in churn by acting on explanations. Enterprise clients rated our ML features 4.7/5 (up from 2.9). My work became a company-wide standard for ML explainability, and I was asked to present it at our customer conference to 500+ attendees.`,
+    whyItsStrong: [
+      "Identified gap between technical output and customer needs",
+      "Direct customer research (interviewed CSMs and clients)",
+      "Translated complex ML into actionable insights",
+      "Measurable adoption increase (23% to 87%)",
+      "Business impact ($3.2M churn prevented, 4.7/5 rating)",
+    ],
+    starBreakdown: {
+      situation: "Q1 2024, Data Scientist, enterprise clients couldn't explain ML churn predictions to stakeholders, leading to distrust",
+      task: "Make ML model outputs understandable and actionable for non-technical users",
+      action: "Interviewed 8 CSMs and 5 clients, learned they needed plain English explanations, built interpretable dashboard with translated outputs, created health scores with clear thresholds",
+      result: "Model adoption 23% → 87%, prevented $3.2M churn, rating 2.9 → 4.7/5, became company-wide ML explainability standard, presented to 500+ at conference",
+    },
+  },
+
+  amazon_ownership_engineering: {
+    question: "Tell me about a time you took on something outside your area of responsibility",
+    principle: "ownership",
+    company: "amazon",
+    roleCategory: "engineering",
+    strongAnswer: `In Q3 2023, I was a frontend engineer when I noticed our CI/CD pipeline was causing significant developer friction. Builds took 45 minutes, flaky tests failed 30% of the time, and developers were spending 15+ hours per week waiting for or debugging builds. This wasn't my area, but it was killing our team's velocity.
+
+I took ownership of fixing it. I spent 2 weeks analyzing build logs, identifying bottlenecks, and proposing improvements. I found: (1) redundant dependency installations, (2) sequential test execution that could be parallelized, and (3) 12 flaky tests that needed fixing.
+
+I implemented caching for dependencies, parallelized test execution across 4 workers, and fixed all 12 flaky tests. I also added build time tracking dashboards so we could monitor improvements over time. I did all this while maintaining my regular sprint commitments.
+
+The result: build times dropped from 45 minutes to 8 minutes (82% reduction), flaky test rate went from 30% to 2%, and developers saved an average of 12 hours per week. Team velocity increased by 35% the following quarter. Our DevOps team adopted my improvements across 5 other repositories. I proved that ownership means seeing a problem and solving it, regardless of whose "area" it is.`,
+    whyItsStrong: [
+      "Identified problem outside role (frontend engineer fixing CI/CD)",
+      "Thorough analysis (2 weeks, identified 3 specific issues)",
+      "Technical implementation (caching, parallelization, flaky test fixes)",
+      "Maintained regular work while taking on extra",
+      "Quantified impact (45min→8min, 30%→2% flaky, 35% velocity increase)",
+    ],
+    starBreakdown: {
+      situation: "Q3 2023, frontend engineer, CI/CD pipeline causing friction: 45-min builds, 30% flaky tests, 15+ hours/week wasted",
+      task: "Fix CI/CD issues despite not being my area of responsibility",
+      action: "Analyzed build logs for 2 weeks, found redundant installs/sequential tests/flaky tests, implemented caching and parallelization, fixed 12 flaky tests, added tracking dashboards",
+      result: "Build time 45min → 8min, flaky rate 30% → 2%, saved 12 hours/week per dev, velocity +35%, adopted across 5 repositories",
+    },
+  },
+
+  amazon_ownership_product: {
+    question: "Tell me about a time you took on something outside your area of responsibility",
+    principle: "ownership",
+    company: "amazon",
+    roleCategory: "product",
+    strongAnswer: `In Q4 2023, I was a Product Manager for our consumer app when I discovered our enterprise sales team was losing deals because our competitor had a feature we didn't: SSO (Single Sign-On) integration. Sales had been asking for this for 6 months, but it kept getting deprioritized. We were losing an estimated $2M per quarter.
+
+Even though enterprise features weren't my area, I took ownership. I analyzed 15 lost deal reports, talked to 8 sales reps, and built a business case showing SSO would close $8M in pipeline within 6 months. I found a vendor that could provide 80% of the functionality with minimal engineering effort.
+
+I pitched leadership on a "quick win" approach: integrate the vendor's SSO in 4 weeks rather than building custom SSO in 4 months. I wrote the PRD, coordinated with security and legal, and project-managed the integration. I even joined 3 sales calls to help position the new feature.
+
+The result: we launched SSO in 5 weeks, closed $3.2M in the first quarter (including 2 deals that had gone to our competitor), and created a playbook for fast enterprise feature delivery. The enterprise PM team adopted my vendor-first approach as their default strategy. I showed that ownership means bridging gaps between teams, not just managing your own product.`,
+    whyItsStrong: [
+      "Identified cross-functional gap ($2M/quarter in lost deals)",
+      "Built compelling business case ($8M pipeline)",
+      "Creative solution (vendor integration vs custom build)",
+      "End-to-end ownership (PRD, security, legal, sales calls)",
+      "Measurable results ($3.2M closed, influenced team strategy)",
+    ],
+    starBreakdown: {
+      situation: "Q4 2023, PM for consumer app, enterprise sales losing deals due to missing SSO, $2M/quarter lost, deprioritized for 6 months",
+      task: "Solve SSO gap even though enterprise wasn't my area",
+      action: "Analyzed 15 lost deals, talked to 8 sales reps, built $8M business case, found vendor solution, pitched quick-win approach, wrote PRD, coordinated security/legal, joined sales calls",
+      result: "Launched SSO in 5 weeks, closed $3.2M first quarter, created fast-feature playbook, vendor-first approach adopted by enterprise PM team",
+    },
+  },
+
+  amazon_ownership_data: {
+    question: "Tell me about a time you took on something outside your area of responsibility",
+    principle: "ownership",
+    company: "amazon",
+    roleCategory: "data",
+    strongAnswer: `In Q2 2024, I was a Data Analyst focused on marketing analytics when I discovered our product team was making decisions based on flawed A/B test results. They were using a tool that didn't account for network effects, leading to inflated conversion numbers. I estimated this had caused 3 bad product decisions in the past quarter.
+
+Even though A/B testing infrastructure wasn't my responsibility, I took ownership. I audited the last 20 A/B tests and found that 8 had statistically invalid conclusions due to improper randomization or network effects. I documented each issue with specific examples and presented to the product leadership.
+
+I then built a proper experimentation framework with correct statistical methodology, network effect controls, and guardrail metrics. I created a self-serve calculator so PMs could size experiments correctly. I also trained 25 PMs and engineers on experimentation best practices over 4 sessions.
+
+The result: we invalidated 2 planned feature launches that would have wasted $500K in development, improved our experiment accuracy from 65% to 94%, and reduced the average time to reach statistical significance by 40%. My framework became the company standard, and I was asked to lead the formation of a central experimentation team. I showed that data ownership means ensuring the entire organization makes good data-driven decisions.`,
+    whyItsStrong: [
+      "Identified systemic problem outside role (marketing analyst fixing A/B testing)",
+      "Thorough audit (20 tests analyzed, 8 issues documented)",
+      "Built scalable solution (framework, calculator, training)",
+      "Cross-functional impact (trained 25 PMs/engineers)",
+      "Business impact ($500K saved, accuracy 65%→94%, led to new team formation)",
+    ],
+    starBreakdown: {
+      situation: "Q2 2024, Data Analyst in marketing, discovered product team using flawed A/B tests, 3 bad decisions in past quarter",
+      task: "Fix experimentation methodology despite not being my area",
+      action: "Audited 20 tests, found 8 invalid, documented issues, built proper framework with statistical controls, created self-serve calculator, trained 25 PMs/engineers in 4 sessions",
+      result: "Prevented $500K waste, accuracy 65%→94%, experiment time -40%, framework became company standard, asked to lead new experimentation team",
+    },
+  },
+
+  // ============================================
+  // ROLE-SPECIFIC EXAMPLES: META
+  // ============================================
+
+  meta_moveFast_engineering: {
+    question: "Tell me about a time when you shipped something quickly despite uncertainty",
+    principle: "moveFast",
+    company: "meta",
+    roleCategory: "engineering",
+    strongAnswer: `In Q4 2023, our competitor launched a real-time collaboration feature that was trending on social media. Our users were asking for it, and leadership wanted a response within 2 weeks. Our typical feature timeline was 8-12 weeks.
+
+I proposed building an MVP using WebSockets and operational transforms. I knew we couldn't build perfect real-time sync, but we could ship something useful fast. I scoped down to: (1) cursor presence, (2) live typing indicators, and (3) basic conflict resolution - no fancy CRDT algorithms.
+
+I coded the WebSocket server in 3 days, collaborated with a frontend engineer on the UI in 2 days, and we launched to 5% of users as a beta. Yes, there were edge cases where conflicts didn't resolve perfectly, but 95% of the time it worked great. We monitored feedback and fixed issues in real-time.
+
+The result: we shipped in 11 days (not 2 weeks!), beta users loved it (4.6/5 rating), and we rolled out to 100% in 3 weeks. Monthly active users increased by 18%, and our feature was covered by 3 tech blogs. The "imperfect" conflict resolution? We fixed it over the next month while users were happily using the feature. Moving fast meant learning fast.`,
+    whyItsStrong: [
+      "Aggressive timeline (11 days vs typical 8-12 weeks)",
+      "Smart scoping (MVP features only, no perfect algorithms)",
+      "Technical ownership (coded WebSocket server in 3 days)",
+      "Iterative approach (5% beta, real-time fixes)",
+      "Business impact (18% MAU increase, press coverage)",
+    ],
+    starBreakdown: {
+      situation: "Q4 2023, competitor launched trending collaboration feature, users asking for it, leadership wanted response in 2 weeks, typical timeline 8-12 weeks",
+      task: "Ship real-time collaboration MVP in 2 weeks",
+      action: "Proposed WebSocket MVP with scoped features (cursor, typing, basic conflict), coded server in 3 days, shipped to 5% beta in 11 days, monitored and fixed issues in real-time",
+      result: "Shipped in 11 days, 4.6/5 rating, rolled out to 100% in 3 weeks, MAU +18%, 3 tech blog features, fixed edge cases over next month",
+    },
+  },
+
+  meta_moveFast_product: {
+    question: "Tell me about a time when you shipped something quickly despite uncertainty",
+    principle: "moveFast",
+    company: "meta",
+    roleCategory: "product",
+    strongAnswer: `In Q1 2024, user research revealed that 40% of new users were churning because our onboarding was confusing. Leadership challenged me to fix it in 2 weeks - our typical redesign process took 6-8 weeks with multiple rounds of user testing.
+
+I decided to move fast with "good enough" data. Instead of extensive research, I watched 10 session recordings, identified the 3 biggest drop-off points, and proposed targeted fixes. I sketched solutions on paper, got designer alignment in 1 day, and created a simple A/B test.
+
+We launched to 10% of new users within 6 days. The results were mixed: 2 of 3 fixes showed improvement, but one actually made things worse. I quickly killed the bad variant, doubled down on the winners, and iterated twice more in the remaining week.
+
+The result: we reduced new user churn by 22% in 2 weeks (vs the 40% problem we started with). Perfect? No. But we'd have needed 6 more weeks of research to find the "perfect" solution, and every week we waited cost us 5,000 churned users. Moving fast with imperfect data beat moving slowly with perfect data. We continued iterating and got to 35% churn reduction over the next month.`,
+    whyItsStrong: [
+      "Timeboxed research (10 session recordings vs extensive user testing)",
+      "Rapid iteration (6 days to launch, 2 more iterations in remaining week)",
+      "Kill failures fast (quickly killed bad variant)",
+      "Quantified trade-off (6 weeks vs 5,000 churned users per week)",
+      "Good-enough results (22% improvement, continued to 35%)",
+    ],
+    starBreakdown: {
+      situation: "Q1 2024, 40% new user churn due to confusing onboarding, leadership wanted fix in 2 weeks, typical redesign 6-8 weeks",
+      task: "Reduce new user churn in 2 weeks with limited research time",
+      action: "Watched 10 session recordings, identified 3 drop-offs, sketched fixes, got alignment in 1 day, launched A/B to 10% in 6 days, killed bad variant, iterated twice",
+      result: "Churn -22% in 2 weeks, continued to -35% over next month, avoided 6 weeks of waiting that would have lost 30K+ users",
+    },
+  },
+
+  meta_focusOnImpact_engineering: {
+    question: "Tell me about a time when you prioritized work based on potential impact",
+    principle: "focusOnImpact",
+    company: "meta",
+    roleCategory: "engineering",
+    strongAnswer: `In Q3 2023, I had 4 major tasks on my plate: (1) a CEO-requested dashboard feature, (2) a performance optimization that would save 200ms, (3) fixing a bug affecting 0.1% of users, and (4) tech debt cleanup that 3 engineers wanted. I had bandwidth for 2.
+
+I built an impact matrix: CEO dashboard would impress leadership but affected 50 users. Performance optimization would improve experience for 2M daily users. Bug fix affected 2,000 users with workarounds available. Tech debt would make engineers 10% faster but had no user impact.
+
+I chose performance optimization (2M users × 200ms) and the bug fix (2,000 users with real pain). I declined the CEO dashboard and tech debt, explaining my reasoning with data. My manager was initially concerned about the CEO request, but I showed that 2M users > 50 users.
+
+The result: the 200ms improvement increased session time by 8% and boosted revenue by $150K/month. The bug fix eliminated 300 support tickets. The CEO dashboard was eventually built by another team 2 months later - the CEO never noticed the delay. I learned that impact isn't about who's asking, it's about who's affected.`,
+    whyItsStrong: [
+      "Clear prioritization framework (impact matrix)",
+      "Courage to decline CEO request with data-backed reasoning",
+      "User-centric decision making (2M users > 50 users)",
+      "Quantified results ($150K/month, 300 tickets eliminated)",
+      "Validated approach (CEO didn't notice delay)",
+    ],
+    starBreakdown: {
+      situation: "Q3 2023, 4 major tasks: CEO dashboard (50 users), performance optimization (2M users), bug fix (2K users), tech debt (engineer productivity)",
+      task: "Prioritize 2 of 4 tasks based on maximum impact",
+      action: "Built impact matrix, chose performance (2M users × 200ms) and bug fix (2K users with pain), declined CEO dashboard with data, explained reasoning to manager",
+      result: "200ms improvement → +8% session time, +$150K/month revenue; bug fix → -300 tickets; CEO dashboard built later by other team, CEO didn't notice delay",
+    },
+  },
+
+  meta_focusOnImpact_data: {
+    question: "Tell me about a time when you prioritized work based on potential impact",
+    principle: "focusOnImpact",
+    company: "meta",
+    roleCategory: "data",
+    strongAnswer: `In Q2 2024, I was a Data Scientist with requests from 5 different teams: (1) marketing wanted attribution modeling, (2) product wanted churn prediction, (3) finance wanted forecasting improvements, (4) ops wanted demand prediction, and (5) exec team wanted a dashboard. I could only deliver 2 in the quarter.
+
+I estimated impact for each: attribution would optimize $500K in ad spend. Churn prediction could save $2M in at-risk revenue. Forecasting improvements would reduce variance by 5%. Demand prediction would save $100K in inventory. Exec dashboard was visibility only.
+
+I chose churn prediction ($2M potential) and attribution modeling ($500K potential). For churn, I built a model that identified accounts with 70%+ churn probability 30 days in advance, giving customer success time to intervene. For attribution, I implemented multi-touch attribution that reallocated 15% of marketing budget to higher-ROI channels.
+
+The result: churn prediction helped retain $1.4M in revenue (70% of the $2M at-risk). Attribution modeling improved marketing ROI by 23%, saving $380K in wasted spend. Combined, my two projects delivered $1.78M in value. The teams whose requests I declined understood when I showed the impact comparison.`,
+    whyItsStrong: [
+      "Clear impact estimation for all options ($2M, $500K, etc.)",
+      "Data-driven prioritization (chose highest impact)",
+      "Concrete deliverables (30-day churn alerts, multi-touch attribution)",
+      "Quantified results ($1.4M retained, $380K saved, $1.78M total)",
+      "Stakeholder management (explained impact comparison)",
+    ],
+    starBreakdown: {
+      situation: "Q2 2024, Data Scientist, requests from 5 teams (attribution, churn, forecasting, demand, dashboard), bandwidth for 2",
+      task: "Prioritize requests based on business impact",
+      action: "Estimated impact for each ($2M churn, $500K attribution, etc.), chose top 2, built 30-day churn alerts and multi-touch attribution, showed impact comparison to declined teams",
+      result: "Churn prediction retained $1.4M, attribution saved $380K, total $1.78M impact, declined teams understood reasoning",
     },
   },
 };

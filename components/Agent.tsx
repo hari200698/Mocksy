@@ -56,7 +56,12 @@ const Agent = ({
     const onMessage = (message: Message) => {
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript };
-        setMessages((prev) => [...prev, newMessage]);
+        console.log(`📜 [TRANSCRIPT] ${message.role}: "${message.transcript.substring(0, 100)}${message.transcript.length > 100 ? '...' : ''}"`);
+        setMessages((prev) => {
+          const updated = [...prev, newMessage];
+          console.log(`📊 [TRANSCRIPT] Total messages: ${updated.length}`);
+          return updated;
+        });
       }
     };
 
@@ -71,7 +76,12 @@ const Agent = ({
     };
 
     const onError = (error: Error) => {
-      console.log("Error:", error);
+      console.error("🔴 VAPI Error:", error);
+      console.error("🔴 Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      });
     };
 
     vapi.on("call-start", onCallStart);
@@ -186,13 +196,22 @@ const Agent = ({
         questionsCount: questions?.length || 0,
       });
       
-      await vapi.start(interviewerConfig, {
-        variableValues: (company || personality) ? {} : {
-          questions: formattedQuestions,
-        },
-      });
+      // Log the full config for debugging
+      console.log("📋 FULL VAPI CONFIG:", JSON.stringify(interviewerConfig, null, 2));
       
-      console.log("✅ VAPI started successfully");
+      try {
+        const result = await vapi.start(interviewerConfig, {
+          variableValues: (company || personality) ? {} : {
+            questions: formattedQuestions,
+          },
+        });
+        console.log("✅ VAPI started successfully, result:", result);
+      } catch (startError: any) {
+        console.error("🔴 VAPI start() failed:", startError);
+        console.error("🔴 Error message:", startError?.message);
+        console.error("🔴 Error response:", startError?.response);
+        throw startError;
+      }
     }
     } catch (error) {
       console.error("❌ Error starting VAPI call:", error);

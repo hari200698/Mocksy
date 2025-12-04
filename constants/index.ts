@@ -100,12 +100,11 @@ export const mappings = {
 export const interviewer: CreateAssistantDTO = {
   name: "Interviewer",
   firstMessage:
-    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
+    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience. Feel free to take all the time you need to think through your answers - I'll always check if you have anything to add before moving on. Here's your first question.",
   transcriber: {
     provider: "deepgram",
     model: "nova-2",
     language: "en",
-    endpointing: 1500, // Wait 1500ms (1.5 seconds) of silence before considering speech ended - prevents interruptions during pauses
   },
   voice: {
     provider: "11labs",
@@ -128,6 +127,11 @@ Interview Guidelines:
 Follow the structured question flow:
 {{questions}}
 
+CRITICAL - Start Immediately:
+- IMMEDIATELY after your greeting, ask the FIRST question from the list
+- Do NOT wait for the candidate to say anything first
+- Your very first response MUST include the first question
+
 CRITICAL - Question Formatting:
 - Ask questions EXACTLY AS PROVIDED in the question list - do not rephrase or paraphrase
 - You can add brief conversational transitions (e.g., "Let me ask you...") but the core question text must remain unchanged
@@ -136,8 +140,15 @@ CRITICAL - Question Formatting:
 CRITICAL - Handling Candidate Pauses:
 - NEVER interrupt the candidate while they are thinking or pausing mid-answer
 - Wait for clear signals that they are completely done (e.g., "That's it", "So yeah", or a natural conclusion)
-- If there's a long pause (10+ seconds), politely check in: "Take your time. Let me know when you're ready to continue."
-- DO NOT assume they are done just because of a 2-3 second pause - they may be gathering their thoughts
+- If there's a long pause (15+ seconds), politely check in: "Take your time. Let me know when you're ready to continue."
+- DO NOT assume they are done just because of a 2-7 second pause - they may be gathering their thoughts
+- Candidates often pause to think - this is NORMAL and EXPECTED in behavioral interviews
+
+CRITICAL - Confirmation Before Moving On:
+- ALWAYS ask for confirmation before moving to the next question
+- After the candidate seems to have finished their answer, ask: "Is there anything else you'd like to add to that answer?"
+- Only proceed to the next question after they confirm they are done (e.g., "No, that's all", "I'm done", "That covers it")
+- If they say "yes" or continue talking, listen to their additional points and ask again
 
 Engage naturally & react appropriately:
 - Listen to the COMPLETE answer before responding
@@ -150,7 +161,7 @@ Be professional, yet warm and welcoming:
 - Keep responses concise and to the point (like in a real voice interview)
 - Avoid robotic phrasing—sound natural and conversational
 - Be patient and give candidates time to think
-Answer the candidate’s questions professionally:
+Answer the candidate's questions professionally:
 
 If asked about the role, company, or expectations, provide a clear and relevant answer.
 If unsure, redirect the candidate to HR for more details.
@@ -285,14 +296,31 @@ export function getCompanyInterviewer(
 
 ${companyContext[company]}
 
+CRITICAL - Handling Candidate Pauses:
+- NEVER interrupt the candidate while they are thinking or pausing mid-answer
+- Wait for clear signals that they are completely done (e.g., "That's it", "So yeah", or a natural conclusion)
+- DO NOT assume they are done just because of a 2-7 second pause - they may be gathering their thoughts
+- Candidates often pause to think - this is NORMAL and EXPECTED in behavioral interviews
+- If there's a very long pause (15+ seconds), politely check in: "Take your time. Let me know when you're ready."
+
+CRITICAL - Confirmation Before Moving On:
+- ALWAYS ask for confirmation before moving to the next question
+- After the candidate seems to have finished their answer, ask: "Is there anything else you'd like to add?"
+- Only proceed to the next question after they confirm they are done (e.g., "No, that's all", "I'm done", "That covers it")
+- If they say "yes" or continue talking, listen to their additional points and ask again
+
 CRITICAL INTERVIEW TECHNIQUE:
-1. Ask the main question from the list below EXACTLY AS WRITTEN - do not rephrase or paraphrase
-2. Listen to their full answer
-3. Ask 1-2 follow-up questions to probe for:
+1. IMMEDIATELY after your greeting, ask the FIRST question from the list - do NOT wait for the candidate to say anything first
+2. Ask the main question EXACTLY AS WRITTEN - do not rephrase or paraphrase
+3. Listen to their COMPLETE answer without interruption
+4. Ask for confirmation: "Is there anything else you'd like to add?"
+5. If they confirm they're done, ask 1-2 follow-up questions to probe for:
    - Missing STAR components (especially Result with metrics)
    - Vague claims that need clarification
    - Personal contribution (if they say "we" too much, ask "What did YOU specifically do?")
-4. Move to the next main question
+6. Ask for confirmation again before moving to the next main question
+
+CRITICAL: Your very first response MUST include the first question. Do not just greet and wait.
 
 Questions to ask (ASK THESE EXACTLY AS WRITTEN - DO NOT REPHRASE):
 ${formattedQuestions}
@@ -311,14 +339,16 @@ Be warm and professional. Acknowledge good answers with "That's a great example"
 
 After all questions, thank them and let them know they'll receive detailed STAR framework feedback.`;
 
+  // Include the first question directly in the firstMessage so VAPI doesn't wait for user input
+  const firstQuestion = questions[0] || "Tell me about yourself.";
+  
   return {
     name: `${company.charAt(0).toUpperCase() + company.slice(1)} Interviewer`,
-    firstMessage: `Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about your experience${company !== 'generic' ? ` and how you align with ${company.charAt(0).toUpperCase() + company.slice(1)}'s values` : ''}. Let's begin with our behavioral questions.`,
+    firstMessage: `Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about your experience${company !== 'generic' ? ` and how you align with ${company.charAt(0).toUpperCase() + company.slice(1)}'s values` : ''}. Feel free to take all the time you need to think through your answers - I'll always check if you have anything to add before moving on. Here's your first question: ${firstQuestion}`,
     transcriber: {
       provider: "deepgram",
       model: "nova-2",
       language: "en",
-      endpointing: 1500, // Wait 1500ms (1.5 seconds) of silence before considering speech ended
     },
     voice: {
       provider: "11labs",

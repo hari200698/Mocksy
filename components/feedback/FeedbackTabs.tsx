@@ -9,9 +9,10 @@ interface FeedbackTabsProps {
   questionEvaluations: QuestionEvaluation[];
   summaryFeedback: SummaryFeedback;
   company?: 'amazon' | 'google' | 'meta' | 'generic';
+  role?: string; // Job role for tailored example answers
 }
 
-const FeedbackTabs = ({ questionEvaluations, summaryFeedback, company }: FeedbackTabsProps) => {
+const FeedbackTabs = ({ questionEvaluations, summaryFeedback, company, role }: FeedbackTabsProps) => {
   const [activeTab, setActiveTab] = useState<'summary' | number>('summary');
 
   return (
@@ -64,6 +65,7 @@ const FeedbackTabs = ({ questionEvaluations, summaryFeedback, company }: Feedbac
             evaluation={questionEvaluations[activeTab as number]}
             questionNumber={activeTab as number + 1}
             company={company}
+            role={role}
           />
         )}
       </div>

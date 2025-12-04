@@ -100,6 +100,7 @@ const Feedback = async ({ params }: { params: Promise<{ id: string }> }) => {
         questionEvaluations={enhancedFeedback.questionEvaluations}
         summaryFeedback={enhancedFeedback.summaryFeedback}
         company={enhancedFeedback.company}
+        role={interview.role}
       />
 
       {/* Action Buttons */}
